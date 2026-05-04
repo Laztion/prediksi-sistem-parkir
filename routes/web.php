@@ -19,6 +19,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/areas', App\Livewire\Admin\AreaManagement::class)->name('areas');
         Route::get('/areas/{id}', App\Livewire\Admin\AreaDetail::class)->name('areas.detail');
+        Route::get('/reservations', App\Livewire\Admin\ReservationManagement::class)->name('reservations');
     });
 });
 

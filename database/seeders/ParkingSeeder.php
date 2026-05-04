@@ -62,44 +62,53 @@ class ParkingSeeder extends Seeder
         $times = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
 
         foreach ($areas as $areaData) {
-            $area = ParkingArea::create($areaData);
+            $area = ParkingArea::firstOrCreate(
+                ['name' => $areaData['name']],
+                $areaData
+            );
 
-            // Create Slots
-            for ($i = 1; $i <= $areaData['total_slots']; $i++) {
-                $status = rand(1, 10) > 8 ? 'occupied' : 'available'; // 20% occupied randomly
-                ParkingSlot::create([
-                    'parking_area_id' => $area->id,
-                    'slot_number' => 'B' . str_pad($i, 2, '0', STR_PAD_LEFT),
-                    'status' => $status,
-                    'type' => $i % 5 == 0 ? 'motorcycle' : 'car', // Mix of types
-                ]);
+            // If area already has slots, skip creation to avoid duplicates
+            if ($area->parkingSlots()->count() == 0) {
+                // Create Slots
+                for ($i = 1; $i <= $areaData['total_slots']; $i++) {
+                    $status = rand(1, 10) > 8 ? 'occupied' : 'available'; // 20% occupied randomly
+                    ParkingSlot::create([
+                        'parking_area_id' => $area->id,
+                        'slot_number' => 'B' . str_pad($i, 2, '0', STR_PAD_LEFT),
+                        'status' => $status,
+                        'type' => $i % 5 == 0 ? 'motorcycle' : 'car', // Mix of types
+                    ]);
+                }
             }
 
-            // Create Occupancy Logs for Naive Bayes Training
-            foreach ($days as $day) {
-                foreach ($times as $time) {
-                    $status = 'available';
-                    
-                    // Business Logic Simulation:
-                    // Weekend afternoons are almost always full in Indo Malls
-                    if (in_array($day, ['Saturday', 'Sunday']) && in_array($time, ['14:00', '16:00', '18:00', '20:00'])) {
-                        $status = 'full';
-                    } 
-                    // Lunch hours on weekdays are busy
-                    elseif (!in_array($day, ['Saturday', 'Sunday']) && $time == '12:00') {
-                        $status = rand(0, 1) ? 'full' : 'available';
-                    }
-                    // Night life on Friday/Saturday
-                    elseif (in_array($day, ['Friday', 'Saturday']) && $time == '22:00') {
-                        $status = 'full';
-                    }
+            // If area already has logs, skip creation to avoid duplicates
+            if ($area->occupancyLogs()->count() == 0) {
+                // Create Occupancy Logs for Naive Bayes Training
+                foreach ($days as $day) {
+                    foreach ($times as $time) {
+                        $status = 'available';
+                        
+                        // Business Logic Simulation:
+                        // Weekend afternoons are almost always full in Indo Malls
+                        if (in_array($day, ['Saturday', 'Sunday']) && in_array($time, ['14:00', '16:00', '18:00', '20:00'])) {
+                            $status = 'full';
+                        } 
+                        // Lunch hours on weekdays are busy
+                        elseif (!in_array($day, ['Saturday', 'Sunday']) && $time == '12:00') {
+                            $status = rand(0, 1) ? 'full' : 'available';
+                        }
+                        // Night life on Friday/Saturday
+                        elseif (in_array($day, ['Friday', 'Saturday']) && $time == '22:00') {
+                            $status = 'full';
+                        }
 
-                    OccupancyLog::create([
-                        'parking_area_id' => $area->id,
-                        'day_of_week' => $day,
-                        'time_slot' => $time,
-                        'occupancy_status' => $status,
-                    ]);
+                        OccupancyLog::create([
+                            'parking_area_id' => $area->id,
+                            'day_of_week' => $day,
+                            'time_slot' => $time,
+                            'occupancy_status' => $status,
+                        ]);
+                    }
                 }
             }
         }
