@@ -11,6 +11,10 @@
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 Manajemen Area
             </a>
+            <a href="{{ route('admin.reservations') }}" class="px-6 py-3 rounded-2xl text-sm font-bold text-white glass-card border border-white/10 hover:bg-white/5 flex items-center transition-all">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                Verifikasi Reservasi
+            </a>
             @endif
             <a href="/" class="btn-primary px-6 py-3 rounded-2xl text-sm font-bold text-white shadow-lg shadow-indigo-500/20 flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -18,6 +22,88 @@
             </a>
         </div>
     </div>
+
+    <!-- Area Selection Section -->
+    <div class="space-y-6">
+        <div class="flex items-center justify-between px-2">
+            <h2 class="text-xl font-extrabold text-white">Pilih Area Parkir</h2>
+            <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">Update Otomatis</div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach($areas as $area)
+                <button wire:click="selectArea({{ $area->id }})" class="glass-card p-6 rounded-[2.5rem] text-left group hover:scale-[1.02] transition-all duration-500 relative overflow-hidden {{ $selectedAreaId == $area->id ? 'border-indigo-500/50 bg-indigo-500/5' : '' }}">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full group-hover:scale-150 transition-transform duration-1000"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="p-3 bg-white/5 rounded-2xl group-hover:bg-indigo-500/20 transition-colors">
+                                <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </div>
+                            <span class="text-[10px] font-black {{ $area->available_count > 0 ? 'text-emerald-400' : 'text-red-400' }} uppercase tracking-tighter">{{ $area->available_count }} Slot Tersedia</span>
+                        </div>
+                        
+                        <h3 class="text-lg font-black text-white leading-tight mb-1">{{ $area->name }}</h3>
+                        <p class="text-xs text-slate-500 line-clamp-1">{{ $area->location }}</p>
+                    </div>
+                </button>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Slot Selection (Visible when an area is selected) -->
+    @if($showSlots)
+    <div class="animate__animated animate__fadeInUp bg-slate-900/50 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500"></div>
+        
+        <div class="flex items-center justify-between mb-10">
+            <div>
+                <h3 class="text-2xl font-black text-white tracking-tight">Pilih Slot di {{ \App\Models\ParkingArea::find($selectedAreaId)->name }}</h3>
+                <p class="text-slate-500 text-sm mt-1">Klik pada slot yang tersedia (warna indigo) untuk melakukan reservasi.</p>
+            </div>
+            <button wire:click="$set('showSlots', false)" class="p-3 bg-white/5 hover:bg-white/10 rounded-2xl text-slate-400 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        @if(session()->has('error'))
+            <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm font-bold animate__animated animate__shakeX">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4">
+            @foreach($availableSlots as $slot)
+                <button 
+                    wire:click="reserveSlot({{ $slot->id }})"
+                    @disabled($slot->status !== 'available')
+                    class="aspect-square rounded-2xl flex flex-col items-center justify-center transition-all duration-300 group relative
+                    {{ $slot->status === 'available' ? 'bg-indigo-500/10 border border-indigo-500/30 hover:bg-indigo-500/20 hover:scale-110' : 'bg-slate-800/50 border border-white/5 opacity-40 cursor-not-allowed' }}"
+                >
+                    <span class="text-xs font-black {{ $slot->status === 'available' ? 'text-indigo-400' : 'text-slate-600' }}">{{ $slot->slot_number }}</span>
+                    @if($slot->type == 'motorcycle')
+                        <svg class="w-3 h-3 mt-1 {{ $slot->status === 'available' ? 'text-indigo-500/50' : 'text-slate-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    @endif
+
+                    @if($slot->status === 'available')
+                        <div class="absolute inset-0 bg-indigo-500/10 rounded-2xl scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+                    @endif
+                </button>
+            @endforeach
+        </div>
+
+        <div class="mt-10 flex flex-wrap gap-6 items-center justify-center p-6 bg-white/5 rounded-[2rem] border border-white/5">
+            <div class="flex items-center space-x-3">
+                <div class="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-500/50"></div>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tersedia</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="w-4 h-4 rounded-full bg-slate-800/50 border border-white/5 opacity-40"></div>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Terisi / Terpesan</span>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Admin Section -->
     @if(Auth::user()->hasRole('admin'))

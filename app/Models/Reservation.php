@@ -16,4 +16,13 @@ class Reservation extends Model
     public function parkingSlot()
     {
         return $this->belongsTo(ParkingSlot::class);
-    }}
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'start_time' => 'datetime',
+            'end_time' => 'datetime',
+        ];
+    }
+}
