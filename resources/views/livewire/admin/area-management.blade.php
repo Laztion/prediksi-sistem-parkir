@@ -36,10 +36,18 @@
 
                 <div>
                     <h3 class="text-xl font-bold text-white tracking-tight">{{ $area->name }}</h3>
-                    <p class="text-xs text-slate-500 mt-1 flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                        {{ $area->location }}
-                    </p>
+                    <div class="flex flex-col space-y-1 mt-1">
+                        <p class="text-xs text-slate-500 flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                            {{ $area->location }}
+                        </p>
+                        @if($area->google_maps_link)
+                        <a href="{{ $area->google_maps_link }}" target="_blank" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold flex items-center transition-colors">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                            Lihat Navigasi
+                        </a>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
@@ -85,6 +93,26 @@
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Total Slot</label>
                             <input wire:model="total_slots" type="number" class="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-5 py-4 text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none">
                         </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Map Image (Denah)</label>
+                            <input wire:model="map_image" type="file" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20 transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Latitude</label>
+                            <input wire:model="latitude" type="text" class="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-5 py-4 text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="-6.123456">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Longitude</label>
+                            <input wire:model="longitude" type="text" class="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-5 py-4 text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="106.123456">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Google Maps Link</label>
+                        <input wire:model="google_maps_link" type="text" class="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-5 py-4 text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="https://maps.google.com/...">
                     </div>
 
                     <div>
